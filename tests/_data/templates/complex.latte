@@ -1,0 +1,3 @@
+{var $var = 'var'}
+{define block}block{/define}
+{$var} {$_content} {include block}{ifset $custom} {$custom}{/ifset}{ifset $attr} {$attr}{/ifset}

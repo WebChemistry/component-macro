@@ -1,0 +1,13 @@
+{
+	"name": "webchemistry/component-macro",
+	"type": "library",
+	"require": {
+		"latte/latte": "^2.4@RC"
+	},
+	"require-dev": {
+		"codeception/codeception": "^2.2"
+	},
+	"autoload": {
+		"classmap": ["src/"]
+	}
+}
