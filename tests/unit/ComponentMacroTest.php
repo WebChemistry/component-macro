@@ -50,6 +50,18 @@ class ComponentMacroTest extends \Codeception\Test\Unit {
 		$this->assertSame('var  content var  block block custom attr', $this->trim($render));
 	}
 
+	public function testModifiers() {
+		$render = $this->render('modifiers.latte');
+
+		$this->assertSame('Lorem Ipsum is...', $render);
+	}
+
+	public function testModifiersBlock() {
+		$render = $this->render('modifiersBlock.latte');
+
+		$this->assertSame('Lorem Ipsum is...', $render);
+	}
+
 	/**
 	 * @param string $str
 	 * @return string

@@ -67,7 +67,7 @@ class ComponentMacro extends MacroSet {
 				'->renderToContentType(%raw);',
 				addslashes($this->directory . $file),
 				$node->htmlNode->attrs,
-				$this->modify($node, $writer, '"html"')
+				$this->modify($node, $writer, '"html"', FALSE)
 			);
 		}
 
@@ -78,14 +78,17 @@ class ComponentMacro extends MacroSet {
 	 * @param MacroNode $node
 	 * @param PhpWriter $writer
 	 * @param string $else
+	 * @param bool $comma
 	 * @return string
 	 */
-	private function modify(MacroNode $node, PhpWriter $writer, $else = '') {
+	private function modify(MacroNode $node, PhpWriter $writer, $else = '', $comma = TRUE) {
 		if (!$node->modifiers) {
 			return $else;
 		}
 
-		return $writer->write(', function ($s, $type) { $_fi = new LR\FilterInfo($type); return %modifyContent($s); }');
+		return $writer->write(
+			($comma ? ', ' : '') . 'function ($s, $type) { $_fi = new LR\FilterInfo($type); return %modifyContent($s); }'
+		);
 	}
 
 	/**
