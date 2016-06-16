@@ -83,3 +83,16 @@ template.latte
 ```html
 {!$_content}
 ```
+
+## Modifiers
+
+```html
+	<Template modifiers="stripHtml|truncate:500" n:component>
+    		Content with dynamic parameter or with macros <Template n:component />
+    </Template>
+```
+
+Same in nette:
+```html
+{include __DIR__ . '/component-dir/template.latte' _content => $foo|stripHtml|truncate:500}
+```

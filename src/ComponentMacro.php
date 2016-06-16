@@ -27,15 +27,22 @@ class ComponentMacro extends MacroSet {
 	}
 
 	/**
-	 * @param MacroNode $macroNode
+	 * @param MacroNode $node
 	 * @param PhpWriter $writer
 	 * @return string
 	 */
-	public function macroComponent(MacroNode $macroNode, PhpWriter $writer) {
-		$isEmpty = $macroNode->htmlNode->isEmpty;
+	public function macroComponent(MacroNode $node, PhpWriter $writer) {
+		$isEmpty = $node->htmlNode->isEmpty;
 		$prepend = $isEmpty ? '' : '<?php ob_start(); ?> ';
-		$macroNode->content = $prepend . $macroNode->innerContent;
-		list($file, $blockName) = $this->parsePath($macroNode->htmlNode->name);
+		$node->content = $prepend . $node->innerContent;
+
+		// modifiers
+		if (isset($node->htmlNode->attrs['modifiers'])) {
+			$node->modifiers = $node->htmlNode->attrs['modifiers'];
+			unset($node->htmlNode->attrs['modifiers']);
+		}
+
+		list($file, $blockName) = $this->parsePath($node->htmlNode->name);
 
 		$inside = $isEmpty ? 'NULL' : 'ob_get_clean()';
 		$code = "// WebChemistry\\Macros\\ComponentMacro\n";
@@ -49,21 +56,37 @@ class ComponentMacro extends MacroSet {
 					) . "\n";
 			}
 			$code .= $writer->write(
-				'$this->renderBlock(%word, $this->params + %var + %node.array? + ["_content" => $_foo]);',
+				'$this->renderBlock(%word, $this->params + %var + %node.array? + ["_content" => $_foo]%raw);',
 				$blockName,
-				$macroNode->htmlNode->attrs
+				$node->htmlNode->attrs,
+				$this->modify($node, $writer)
 			);
 		} else {
 			$code .= $writer->write(
 				'$this->createTemplate(%word, $this->params + %var + %node.array? + ["_content" => ' . $inside . '], "include")' .
-				'->renderToContentType("html");',
+				'->renderToContentType(%raw);',
 				addslashes($this->directory . $file),
-				$macroNode->htmlNode->attrs
+				$node->htmlNode->attrs,
+				$this->modify($node, $writer, '"html"')
 			);
 		}
 
 		return $code;
- 	}
+	}
+
+	/**
+	 * @param MacroNode $node
+	 * @param PhpWriter $writer
+	 * @param string $else
+	 * @return string
+	 */
+	private function modify(MacroNode $node, PhpWriter $writer, $else = '') {
+		if (!$node->modifiers) {
+			return $else;
+		}
+
+		return $writer->write(', function ($s, $type) { $_fi = new LR\FilterInfo($type); return %modifyContent($s); }');
+	}
 
 	/**
 	 * @param $name
