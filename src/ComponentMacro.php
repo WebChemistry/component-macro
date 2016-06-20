@@ -63,11 +63,13 @@ class ComponentMacro extends MacroSet {
 			);
 		} else {
 			$code .= $writer->write(
-				'$this->createTemplate(%word, $this->params + %var + %node.array? + ["_content" => ' . $inside . '], "include")' .
-				'->renderToContentType(%raw);',
+				'$tmpl = $this->createTemplate(%word, $this->params + %var + %node.array? + ["_content" => ' . $inside . '], "include");' .
+				'$tmpl->blockQueue = array_merge_recursive($this->blockQueue, $tmpl->blockQueue);' .
+				'$tmpl->blockTypes = $this->blockTypes;' .
+				'$tmpl->renderToContentType(%raw);',
 				addslashes($this->directory . $file),
 				$node->htmlNode->attrs,
-				$this->modify($node, $writer, '"html"', FALSE)
+				$this->modify($node, $writer, '"html"')
 			);
 		}
 
