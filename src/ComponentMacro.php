@@ -47,9 +47,10 @@ class ComponentMacro extends MacroSet {
 		$inside = $isEmpty ? 'NULL' : 'ob_get_clean()';
 		$code = "// WebChemistry\\Macros\\ComponentMacro\n";
 		if ($blockName) {
+			$code .= $writer->write('$_foo = %raw;', $inside);
+			$code .= "\n";
 			if (!isset($this->imports[$file])) {
 				$this->imports[$file] = TRUE;
-				$code .= "\$_foo = $inside;\n";
 				$code .= $writer->write(
 						'$this->createTemplate(%var, $this->params, "import")->render();',
 						$this->directory . $file
