@@ -33,8 +33,8 @@ class ComponentMacro extends MacroSet {
 	 */
 	public function macroComponent(MacroNode $node, PhpWriter $writer) {
 		$isEmpty = $node->htmlNode->isEmpty;
+		$tagName = $node->htmlNode->name;
 		$prepend = $isEmpty ? '' : '<?php ob_start(); ?> ';
-		$node->content = $prepend . $node->innerContent;
 
 		// modifiers
 		if (isset($node->htmlNode->attrs['modifiers'])) {
@@ -51,8 +51,8 @@ class ComponentMacro extends MacroSet {
 				$this->imports[$file] = TRUE;
 				$code .= "\$_foo = $inside;\n";
 				$code .= $writer->write(
-						'$this->createTemplate(%word, $this->params, "import")->render();',
-						addslashes($this->directory . $file)
+						'$this->createTemplate(%var, $this->params, "import")->render();',
+						$this->directory . $file
 					) . "\n";
 			}
 			$code .= $writer->write(
@@ -63,17 +63,18 @@ class ComponentMacro extends MacroSet {
 			);
 		} else {
 			$code .= $writer->write(
-				'$tmpl = $this->createTemplate(%word, $this->params + %var + %node.array? + ["_content" => ' . $inside . '], "include");' .
+				'$_content = ' . $inside . ';' .
+				'$tmpl = $this->createTemplate(%var, $this->params + %var + %node.array? + ["_content" => $_content], "include");' .
 				'$tmpl->blockQueue = array_merge_recursive($this->blockQueue, $tmpl->blockQueue);' .
 				'$tmpl->blockTypes = $this->blockTypes;' .
 				'$tmpl->renderToContentType(%raw);',
-				addslashes($this->directory . $file),
+				$this->directory . $file,
 				$node->htmlNode->attrs,
 				$this->modify($node, $writer, '"html"')
 			);
 		}
 
-		return $code;
+		$node->content = preg_replace("~<$tagName.*?>(.*)<\\/$tagName>~s", $prepend . $node->innerContent . '<?php ' . $code . ' ?>', $node->content);
 	}
 
 	/**
