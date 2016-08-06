@@ -39,7 +39,6 @@ class ComponentMacro extends MacroSet {
 		// modifiers
 		if (isset($node->htmlNode->attrs['modifiers'])) {
 			$node->modifiers = $node->htmlNode->attrs['modifiers'];
-			unset($node->htmlNode->attrs['modifiers']);
 		}
 
 		list($file, $blockName) = $this->parsePath($node->htmlNode->name);
@@ -57,21 +56,16 @@ class ComponentMacro extends MacroSet {
 					) . "\n";
 			}
 			$code .= $writer->write(
-				'$this->renderBlock(%word, $this->params + %var + %node.array? + ["_content" => $_foo]%raw);',
+				'$this->renderBlock(%word, $this->params + %node.array? + ["_content" => $_foo]%raw);',
 				$blockName,
-				$node->htmlNode->attrs,
 				$this->modify($node, $writer)
 			);
 		} else {
 			$code .= $writer->write(
-				'$_content = ' . $inside . ';' .
-				'$tmpl = $this->createTemplate(%var, $this->params + %var + %node.array? + ["_content" => $_content], "include");' .
-				'$tmpl->blockQueue = array_merge_recursive($this->blockQueue, $tmpl->blockQueue);' .
-				'$tmpl->blockTypes = $this->blockTypes;' .
-				'$tmpl->renderToContentType(%raw);',
+				'$_tmp = $this->createTemplate(%var, $this->params + %node.array? + ["_content" => ' . $inside . '], "include");' .
+				'$_tmp->renderToContentType(%raw)',
 				$this->directory . $file,
-				$node->htmlNode->attrs,
-				$this->modify($node, $writer, '"html"')
+				$this->modify($node, $writer, '"html"', FALSE)
 			);
 		}
 
