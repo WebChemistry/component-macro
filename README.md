@@ -24,38 +24,55 @@ Renders content from component-dir/template.latte
 ## Usage single file, multiple blocks
 
 ```html
-	<TemplateFirst n:component /> <!-- Render block 'first' -->
-	<TemplateSecond n:component /> <!-- Render block 'second' -->
+	<TemplateFirst block n:component /> <!-- Renders block 'first' -->
+	<TemplateSecond block n:component="key => value" /> <!-- Renders block 'second' -->
 ```
 
 Same in nette:
 ```html
 {import __DIR__ . '/component-dir/template.latte'}
 
-{include first}
-{include second}
+{include #first}
+{include #second key => value}
 ```
 
 template.latte
 ```html
 {define first}
-
+    ...
 {/define}
 
 {define second}
-
+    {$key}
+    ...
 {/define}
+```
+
+## Usage file from other directory
+
+```html
+    <TemplateFirst n:component />
+```
+
+Same in nette:
+```html
+{include __DIR__ . '/component-dir/template/first.latte'}
+```
+
+template/first.latte:
+```html
+...
 ```
 
 ## Custom parameters
 
 ```html
-	<Template n:component="foo => bar" atrrParameter="val" />
+	<Template n:component="foo => bar" />
 ````
 
 Same in nette:
 ```html
-	{include __DIR__ . '/component-dir/template.latte' foo => bar, attrParameter => val}
+	{include __DIR__ . '/component-dir/template.latte' foo => bar}
 ```
 
 template.latte
