@@ -60,13 +60,13 @@ class ComponentMacro extends MacroSet {
 					) . "\n";
 			}
 			$code .= $writer->write(
-				'$this->renderBlock(%word, $this->params + %node.array? + ["_content" => $_foo]%raw);',
+				'$this->renderBlock(%word, ["_content" => $_foo] + %node.array? + $this->params %raw);',
 				$blockName,
 				$this->modify($node, $writer)
 			);
 		} else {
 			$code .= $writer->write(
-				'$this->createTemplate(%var, $this->params + %node.array? + ["_content" => ' . $inside . '], "include")' .
+				'$this->createTemplate(%var, ["_content" => ' . $inside . '] + %node.array? + $this->params, "include")' .
 				'->renderToContentType(%raw)',
 				$this->directory . $file,
 				$this->modify($node, $writer, '"html"', FALSE)
