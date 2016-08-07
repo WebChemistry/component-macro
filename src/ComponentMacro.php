@@ -35,13 +35,17 @@ class ComponentMacro extends MacroSet {
 		$isEmpty = $node->htmlNode->isEmpty;
 		$tagName = $node->htmlNode->name;
 		$prepend = $isEmpty ? '' : '<?php ob_start(); ?> ';
+		$isBlock = FALSE;
 
 		// modifiers
 		if (isset($node->htmlNode->attrs['modifiers'])) {
 			$node->modifiers = $node->htmlNode->attrs['modifiers'];
 		}
+		if (isset($node->htmlNode->attrs['block'])) {
+			$isBlock = TRUE;
+		}
 
-		list($file, $blockName) = $this->parsePath($node->htmlNode->name);
+		list($file, $blockName) = $this->parsePath($node->htmlNode->name, $isBlock);
 
 		$inside = $isEmpty ? 'NULL' : 'ob_get_clean()';
 		$code = "// WebChemistry\\Macros\\ComponentMacro\n";
@@ -62,8 +66,8 @@ class ComponentMacro extends MacroSet {
 			);
 		} else {
 			$code .= $writer->write(
-				'$_tmp = $this->createTemplate(%var, $this->params + %node.array? + ["_content" => ' . $inside . '], "include");' .
-				'$_tmp->renderToContentType(%raw)',
+				'$this->createTemplate(%var, $this->params + %node.array? + ["_content" => ' . $inside . '], "include")' .
+				'->renderToContentType(%raw)',
 				$this->directory . $file,
 				$this->modify($node, $writer, '"html"', FALSE)
 			);
@@ -93,12 +97,19 @@ class ComponentMacro extends MacroSet {
 	 * @param $name
 	 * @return array [directory, blockName]
 	 */
-	private function parsePath($name) {
+	private function parsePath($name, $isBlock = FALSE) {
 		preg_match_all('~[A-Z]?[^A-Z]+~', $name, $matches);
 		$matches = array_map(function ($val) {
 			return lcfirst($val);
 		}, $matches[0]);
 		$len = count($matches);
+
+		if (!$isBlock) {
+			return [
+				'/' . implode('/', $matches) . '.latte',
+				NULL
+			];
+		}
 
 		return [
 			'/'. ($len === 1 ? $matches[0] : implode('/', array_slice($matches, 0, $len - 1))) . '.latte',

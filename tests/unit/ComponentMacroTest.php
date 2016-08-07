@@ -62,6 +62,13 @@ class ComponentMacroTest extends \Codeception\Test\Unit {
 		$this->assertSame('Lorem Ipsum is...', $render);
 	}
 
+	public function testWithDirectoryWithoutBlock() {
+		$render = $this->render('dirWithoutBlock.latte');
+
+		//$this->assertSame('', $this->renderCode('dirWithoutBlock.latte'));
+		$this->assertSame('template', $this->trim($render));
+	}
+
 	/**
 	 * @param string $str
 	 * @return string
