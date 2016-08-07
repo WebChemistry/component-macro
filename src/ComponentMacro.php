@@ -50,8 +50,6 @@ class ComponentMacro extends MacroSet {
 		$inside = $isEmpty ? 'NULL' : 'ob_get_clean()';
 		$code = "// WebChemistry\\Macros\\ComponentMacro\n";
 		if ($blockName) {
-			$code .= $writer->write('$_foo = %raw;', $inside);
-			$code .= "\n";
 			if (!isset($this->imports[$file])) {
 				$this->imports[$file] = TRUE;
 				$code .= $writer->write(
@@ -60,7 +58,7 @@ class ComponentMacro extends MacroSet {
 					) . "\n";
 			}
 			$code .= $writer->write(
-				'$this->renderBlock(%word, ["_content" => $_foo] + %node.array? + $this->params %raw);',
+				'$this->renderBlock(%word, ["_content" => ' . $inside . '] + %node.array? + $this->params %raw);',
 				$blockName,
 				$this->modify($node, $writer)
 			);
