@@ -9,19 +9,19 @@ use Latte\PhpWriter;
 
 class ComponentMacro extends MacroSet {
 
-	/** @var string */
-	public $directory;
+	/** @var array */
+	public $directories = [];
 
 	/** @var array */
 	protected $imports = [];
 
 	/**
 	 * @param Compiler $compiler
-	 * @param string $directory
+	 * @param string|array $directory
 	 */
 	public static function install(Compiler $compiler, $directory) {
 		$me = new self($compiler);
-		$me->directory = $directory;
+		$me->directories = (array) $directory;
 
 		$me->addMacro('component', NULL, [$me, 'macroComponent']);
 	}
@@ -49,12 +49,13 @@ class ComponentMacro extends MacroSet {
 
 		$inside = $isEmpty ? 'NULL' : 'ob_get_clean()';
 		$code = "// WebChemistry\\Macros\\ComponentMacro\n";
+		$path = $this->getPath($file);
 		if ($blockName) {
 			if (!isset($this->imports[$file])) {
 				$this->imports[$file] = TRUE;
 				$code .= $writer->write(
 						'$this->createTemplate(%var, $this->params, "import")->render();',
-						$this->directory . $file
+						$path
 					) . "\n";
 			}
 			$code .= $writer->write(
@@ -66,12 +67,22 @@ class ComponentMacro extends MacroSet {
 			$code .= $writer->write(
 				'$this->createTemplate(%var, ["_content" => ' . $inside . '] + %node.array? + $this->params, "include")' .
 				'->renderToContentType(%raw)',
-				$this->directory . $file,
+				$path,
 				$this->modify($node, $writer, '"html"', FALSE)
 			);
 		}
 
 		$node->content = preg_replace("~<$tagName.*?>(.*)<\\/$tagName>~s", $prepend . $node->innerContent . '<?php ' . $code . ' ?>', $node->content);
+	}
+
+	public function getPath($file) {
+		foreach ($this->directories as $directory) {
+			if (file_exists($directory . $file)) {
+				return $directory . $file;
+			}
+		}
+
+		throw new \Exception("Template for file $file not found.");
 	}
 
 	/**
