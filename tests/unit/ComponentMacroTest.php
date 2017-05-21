@@ -47,7 +47,7 @@ class ComponentMacroTest extends \Codeception\Test\Unit {
 	public function testComplex() {
 		$render = $this->render('complex.latte');
 
-		$this->assertSame('var  content var  block block custom', $this->trim($render));
+		$this->assertSame('var  content var   block block custom', $this->trim($render));
 	}
 
 	public function testModifiers() {

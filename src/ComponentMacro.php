@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WebChemistry\Macros;
 
 use Latte\Compiler;
@@ -19,7 +21,7 @@ class ComponentMacro extends MacroSet {
 	 * @param Compiler $compiler
 	 * @param string|array $directory
 	 */
-	public static function install(Compiler $compiler, $directory) {
+	public static function install(Compiler $compiler, $directory): void {
 		$me = new self($compiler);
 		$me->directories = (array) $directory;
 
@@ -29,10 +31,10 @@ class ComponentMacro extends MacroSet {
 	/**
 	 * @param MacroNode $node
 	 * @param PhpWriter $writer
-	 * @return string
+	 * @return string|null
 	 */
-	public function macroComponent(MacroNode $node, PhpWriter $writer) {
-		$isEmpty = $node->htmlNode->isEmpty;
+	public function macroComponent(MacroNode $node, PhpWriter $writer): ?string {
+		$isEmpty = !$node->content;
 		$tagName = $node->htmlNode->name;
 		$prepend = $isEmpty ? '' : '<?php ob_start(); ?> ';
 		$isBlock = FALSE;
@@ -73,9 +75,11 @@ class ComponentMacro extends MacroSet {
 		}
 
 		$node->content = preg_replace("~<$tagName.*?>(.*)<\\/$tagName>~s", $prepend . $node->innerContent . '<?php ' . $code . ' ?>', $node->content);
+
+		return NULL;
 	}
 
-	public function getPath($file) {
+	public function getPath(string $file): string {
 		foreach ($this->directories as $directory) {
 			if (file_exists($directory . $file)) {
 				return $directory . $file;
@@ -92,7 +96,7 @@ class ComponentMacro extends MacroSet {
 	 * @param bool $comma
 	 * @return string
 	 */
-	private function modify(MacroNode $node, PhpWriter $writer, $else = '', $comma = TRUE) {
+	private function modify(MacroNode $node, PhpWriter $writer, string $else = '', bool $comma = TRUE): string {
 		if (!$node->modifiers) {
 			return $else;
 		}
@@ -103,10 +107,11 @@ class ComponentMacro extends MacroSet {
 	}
 
 	/**
-	 * @param $name
+	 * @param string $name
+	 * @param bool $isBlock
 	 * @return array [directory, blockName]
 	 */
-	private function parsePath($name, $isBlock = FALSE) {
+	private function parsePath(string $name, bool $isBlock = FALSE) {
 		preg_match_all('~[A-Z]?[^A-Z]+~', $name, $matches);
 		$matches = array_map(function ($val) {
 			return lcfirst($val);
