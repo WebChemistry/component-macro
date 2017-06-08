@@ -2,7 +2,7 @@
 	"name": "webchemistry/component-macro",
 	"type": "library",
 	"require": {
-		"php": "7.1",
+		"php": ">= 7.1",
 		"latte/latte": ">=2.4.3"
 	},
 	"minimum-stability": "alpha",
